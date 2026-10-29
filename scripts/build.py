@@ -26,8 +26,21 @@ def url(path='/'):
     return BASE + path
 
 
+def image(match):
+    alt, path = match.group(1), match.group(2)
+    if not path.startswith('/'):
+        raise ValueError(f'图片地址 {path} 必须以 / 开头，例如 /media/photo.jpg；请用后台的图片按钮上传，不要引用外部图片。')
+    if not path.startswith(BASE + '/'):
+        path = BASE + path
+    local = path[len(BASE):] if BASE else path
+    if not (local.startswith('/media/') and (ROOT / 'content' / local.lstrip('/')).is_file()):
+        raise ValueError(f'找不到图片 {local}：图片文件必须放在 content/media/ 目录下，并写成 /media/文件名。')
+    return f'<img src="{path}" alt="{alt}" loading="lazy">'
+
+
 def inline(value):
     value = html.escape(value)
+    value = re.sub(r'!\[([^\]]*)\]\(([^\s)]+)\)', image, value)
     value = re.sub(r'`([^`]+)`', r'<code>\1</code>', value)
     value = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', value)
     return re.sub(r'\[([^\]]+)\]\(((?:https?://|/|#)[^\s)]+)\)', r'<a href="\2">\1</a>', value)
@@ -212,26 +225,79 @@ def write(path, content):
     target.write_text(content)
 
 
+def unquote(value):
+    """Plain, "double" or 'single' quoted scalar."""
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        try:
+            return json.loads(value)
+        except ValueError:
+            return value[1:-1]
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
+    return value
+
+
+def front_matter(name, text):
+    """Split an article file into (metadata dict, body). Only simple `key: value` lines are supported."""
+    text = text.lstrip('\ufeff').replace('\r\n', '\n')
+    match = re.match(r'---[ \t]*\n(.*?\n)?---[ \t]*(?:\n|$)', text, re.S)
+    if not match:
+        raise ValueError(f'{name}：文件开头缺少文章信息。第一行必须是 ---，接着写 title、category、date，再用一行 --- 结束。')
+    meta, key = {}, None
+    for line in (match.group(1) or '').split('\n'):
+        if not line.strip() or line.lstrip().startswith('#'):
+            continue
+        if line[0] in ' \t' and key:
+            meta[key] = (meta[key] + ' ' + line.strip()).strip()
+            continue
+        found = re.fullmatch(r'([A-Za-z_][\w-]*)[ \t]*:[ \t]*(.*)', line.rstrip())
+        if not found:
+            raise ValueError(f'{name}：文章信息里的这一行看不懂：“{line}”。每行只能写成 名称: 值，例如 title: 文章标题。')
+        key, value = found.group(1), found.group(2).strip()
+        if value and value[0] in '|>[{&*!':
+            raise ValueError(f'{name}：文章信息“{key}”的值太复杂，只支持单行文字，请改成 {key}: 文字。')
+        meta[key] = unquote(value)
+    return meta, text[match.end():]
+
+
+def load_post(path):
+    name = path.name
+    slug = path.stem
+    if path.suffix != '.md' or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug):
+        raise ValueError(f'{name}：文件名不合规。请改成只含小写英文、数字和连字符的名字，例如 autumn-rain.md。')
+    meta, body = front_matter(name, path.read_text(encoding='utf-8'))
+    for field, hint in [('title', '文章标题'), ('category', 'life（生活）或 tech（技术）'), ('date', '日期，例如 2026-10-30')]:
+        if not meta.get(field):
+            raise ValueError(f'{name}：文章信息缺少“{field}”。请在开头的 --- 之间补上 {field}: {hint}。')
+    if meta['category'] not in CATEGORIES:
+        raise ValueError(f'{name}：category 写成了“{meta["category"]}”，只能是 life（生活）或 tech（技术）。')
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', meta['date']):
+        raise ValueError(f'{name}：date 写成了“{meta["date"]}”，格式应为 YYYY-MM-DD，例如 2026-10-30。')
+    try:
+        dt.date.fromisoformat(meta['date'])
+    except ValueError:
+        raise ValueError(f'{name}：date“{meta["date"]}”不是真实存在的日期，请改成 YYYY-MM-DD，例如 2026-10-30。') from None
+    if meta.get('slug') and meta['slug'] != slug:
+        raise ValueError(f'{name}：文章地址 slug 写成了“{meta["slug"]}”，与文件名“{slug}”不一致。请改回 {slug}，或把文件改名。')
+    chars = len(HAN.findall(body))
+    return {'slug': slug, 'title': meta['title'], 'category': meta['category'], 'date': meta['date'],
+            'excerpt': meta.get('excerpt', ''), 'body': markdown(body), 'chars': chars,
+            'minutes': max(1, math.ceil(chars / 400))}
+
+
+def load_posts():
+    return [load_post(path) for path in sorted((ROOT / 'content/posts').glob('*.md'))]
+
+
 def main():
-    posts = json.loads((ROOT / 'content/posts.json').read_text())
-    slugs = set()
-    for post in posts:
-        slug = post['slug']
-        if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug) or slug in slugs:
-            raise ValueError('Invalid or duplicate article slug')
-        slugs.add(slug)
-        if post['category'] not in CATEGORIES:
-            raise ValueError('Unknown category')
-        dt.date.fromisoformat(post['date'])
-        source = (ROOT / 'content/posts' / (slug + '.md')).read_text()
-        post['body'] = markdown(source)
-        post['chars'] = len(HAN.findall(source))
-        post['minutes'] = max(1, math.ceil(post['chars'] / 400))
+    posts = load_posts()
     posts.sort(key=lambda post: post['date'], reverse=True)
     counts = {key: sum(post['category'] == key for post in posts) for key in CATEGORIES}
     if DIST.exists():
         shutil.rmtree(DIST)
     shutil.copytree(ROOT / 'assets', DIST / 'assets')
+    if (ROOT / 'content/media').is_dir():
+        shutil.copytree(ROOT / 'content/media', DIST / 'media', ignore=shutil.ignore_patterns('.*'))
     intro, links = intro_block()
     filters = ('  <h2 class="rise" style="--i:7">文章</h2>\n  <p class="filters rise" style="--i:8">分类：'
                + ''.join(f'<a{ON if key == "all" else ""} data-f="{key}" href="{url(path)}">{label}<small>{n}</small></a>'

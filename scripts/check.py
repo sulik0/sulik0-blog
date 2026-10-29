@@ -4,12 +4,16 @@ from html.parser import HTMLParser
 import json
 from pathlib import Path
 import re
+import sys
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / 'dist'
 config = json.loads((ROOT / 'site.json').read_text())
 base = config.get('base_path', '').rstrip('/')
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build import load_posts  # noqa: E402
+
 HAN = re.compile(r'[㐀-䶿一-鿿]')
 
 
@@ -29,6 +33,7 @@ class Page(HTMLParser):
             self.ids.add(data['id'])
         if tag == 'img':
             assert 'alt' in data, 'Image alt missing'
+            assert data.get('loading') == 'lazy', 'Image must be loading=lazy'
         for attribute in ['href', 'src']:
             if attribute in data:
                 self.references.append(data[attribute])
@@ -83,7 +88,7 @@ def check_hero(text):
 
 def main():
     pages = list(DIST.rglob('*.html'))
-    posts = json.loads((ROOT / 'content/posts.json').read_text())
+    posts = load_posts()
     assert len(pages) == 4 + len(posts)
     for path in pages:
         text = path.read_text()
