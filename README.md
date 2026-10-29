@@ -1,10 +1,10 @@
 # sulik0 的博客
 
-生活感悟与技术学习。当前只保存源码，未配置新的托管；不用 ChatGPT Sites，不使用 VPS。
+生活感悟与技术学习。公开地址：https://sulik0.github.io/sulik0-blog/ （GitHub Pages）；不用 ChatGPT Sites，不使用 VPS。
 
 ## 保留的核心
 
-首页、生活/技术分类、Markdown 文章页。没有示例文章、搜索、归档、RSS、后台或自动部署。
+首页、生活/技术分类、Markdown 文章页。没有示例文章、搜索、归档、RSS 或后台。推送到 `main` 后由 GitHub Actions 自动生成并发布。
 
 ```text
 assets/          样式 site.css、交互 site.js、字体 fonts/ 与图标
@@ -70,7 +70,7 @@ python3 scripts/fonts.py
 
 ## 交给其他 agent
 
-先读 `AGENTS.md`。页面改 `templates/`，样式改 `assets/site.css`，生成逻辑改 `scripts/build.py`。验证后提交 Git；未来需要公开部署时，再按所有者选择配置平台和 `base_path`。
+先读 `AGENTS.md`。页面改 `templates/`，样式改 `assets/site.css`，生成逻辑改 `scripts/build.py`。验证后提交 Git；部署平台由所有者选定为 GitHub Pages，`site.json` 的 `base_path` 为 `/sulik0-blog`；换平台或绑定自定义域名时要同步修改它。
 
 2026-10-29：彩虹桥改版（分支 `redesign-rainbow-bridge`），新增 `assets/site.js` 与站内字体。
 
@@ -79,3 +79,5 @@ python3 scripts/fonts.py
 回退：使用 Git 恢复需要的源码版本，再重新生成。撤销改版只需不合并或还原 `redesign-rainbow-bridge` 分支上的提交。操作记录只保留必要步骤、验证和回退，避免堆积长文。
 
 旧私有预览尚需在 Sites 管理界面手动下线或删除（当前工具没有此接口）；本项目已移除关联配置，不再向它发布。
+
+2026-10-29：按所有者要求公开发布到 GitHub Pages。仓库改为公开；`.github/workflows/pages.yml` 在推送到 `main` 时运行 `build.py` 和 `check.py`，再把 `dist/` 发布出去。验证：Actions 运行成功，线上首页、分类页和字体都能加载。回退：在仓库 Settings → Pages 停用，或删除该工作流。本地预览如果要用根路径，临时把 `base_path` 改回 `""`，不要提交这个改动。
