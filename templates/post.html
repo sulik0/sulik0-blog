@@ -1,7 +1,6 @@
-<article>
-  <header class="intro">
-    <p class="meta"><time datetime="$date">$date</time> / <a href="$category_url">$category</a></p>
-    <h1>$title</h1>
-  </header>
-  <div class="prose">$body</div>
-</article>
+<article class="post">
+  <a class="back rise" style="--i:2" href="$category_url">$back_icon$category</a>
+  <h1 class="rise" style="--i:3">$title</h1>
+  <p class="meta rise" style="--i:4"><span class="c $category_key">$category</span><time datetime="$date">$date</time><span>$minutes min</span><span>约 $chars 字</span></p>
+  <div class="prose rise" style="--i:5">$body</div>
+$pager</article>
