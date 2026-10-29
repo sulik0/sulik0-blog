@@ -42,11 +42,9 @@ LICENSES = [
 
 # (输出文件, 源文件, 字重 或 None=静态字体, 是否中文子集)
 JOBS = [
-    ("noto-serif-sc-500", "NotoSerifSC[wght].ttf", 500, True),
     ("noto-serif-sc-600", "NotoSerifSC[wght].ttf", 600, True),
     ("noto-sans-sc-300", "NotoSansSC[wght].ttf", 300, True),
     ("noto-sans-sc-400", "NotoSansSC[wght].ttf", 400, True),
-    ("noto-sans-sc-500", "NotoSansSC[wght].ttf", 500, True),
     ("ibm-plex-mono-400", "IBMPlexMono-Regular.ttf", None, False),
     ("ibm-plex-mono-500", "IBMPlexMono-Medium.ttf", None, False),
 ]
