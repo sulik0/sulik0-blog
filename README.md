@@ -4,7 +4,7 @@
 
 ## 保留的核心
 
-首页、生活/技术分类、Markdown 文章页。没有示例文章、搜索、归档、RSS 或后台。推送到 `main` 后由 GitHub Actions 自动生成并发布。
+首页、生活/技术分类、Markdown 文章页。没有搜索、归档、RSS 或后台。推送到 `main` 后由 GitHub Actions 自动生成并发布。
 
 ```text
 assets/          样式 site.css、交互 site.js、字体 fonts/ 与图标
@@ -46,7 +46,7 @@ python3 scripts/fonts.py
 
 ## 写文章
 
-在 `content/posts/` 新建 `my-first-post.md` 写正文，在 `content/posts.json` 添加一条记录：
+在 `content/posts/` 新建 `my-first-post.md` 写正文，在 `content/posts.json` 的现有数组中添加一条记录（保留已有文章，各条记录之间用逗号隔开）：
 
 ```json
 [
@@ -61,6 +61,12 @@ python3 scripts/fonts.py
 ```
 
 `life` 是生活，`tech` 是技术。正文支持段落、二/三级标题、列表、引用、链接、粗体和代码块（不做语法高亮）。阅读时长按正文汉字数 ÷ 400 向上取整。重新生成即可；没有文章时显示空状态。
+
+标题由文章记录生成，正文从段落或 `## 二级标题` 开始，不必重复写一级标题。`slug` 必须与 Markdown 文件名（去掉 `.md`）一致，使用小写英文字母、数字和短横线。
+
+也可以直接在 GitHub 网页上操作：先打开 `content/posts/`，用 **Add file → Create new file** 新建正文，再编辑 `content/posts.json` 添加记录。两项改动都完成并合入 `main` 后，在仓库 **Actions** 中等待发布成功，再打开博客查看。
+
+测试文章是 `content/posts/first-test-post.md`，可照着它写下一篇。删除文章时，同时删除正文文件和清单中的对应记录，再推送到 `main`。
 
 ## 验证
 
@@ -79,5 +85,7 @@ python3 scripts/fonts.py
 回退：使用 Git 恢复需要的源码版本，再重新生成。撤销改版只需不合并或还原 `redesign-rainbow-bridge` 分支上的提交。操作记录只保留必要步骤、验证和回退，避免堆积长文。
 
 旧私有预览尚需在 Sites 管理界面手动下线或删除（当前工具没有此接口）；本项目已移除关联配置，不再向它发布。
+
+2026-10-30：将无效的 `[test]` 文章清单修正为合法 JSON，并新增一篇所有者要求的测试文章。验证：空清单与一篇文章均通过生成和检查。回退：还原本次提交即可；如只需撤下测试文章，同时删除正文及清单记录，保持清单为合法 JSON 数组。
 
 2026-10-29：按所有者要求公开发布到 GitHub Pages。仓库改为公开；`.github/workflows/pages.yml` 在推送到 `main` 时运行 `build.py` 和 `check.py`，再把 `dist/` 发布出去。验证：Actions 运行成功，线上首页、分类页和字体都能加载。回退：在仓库 Settings → Pages 停用，或删除该工作流。本地预览如果要用根路径，临时把 `base_path` 改回 `""`，不要提交这个改动。
