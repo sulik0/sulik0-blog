@@ -1,0 +1,391 @@
+<title>sulik0 博客改版方案 · 定稿</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@300;500;600&display=swap">
+<style>
+/* 布局：定稿审阅页。顶部切换五个页面状态，每个状态是一块完整小样，下方是交给开发的要点 */
+:root {
+  --bg: #ecedeb; --fg: #1b1d1c; --muted: #6a6f6c; --line: #d3d6d3; --card: #f7f8f6; --accent: #b0397f;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #141615; --fg: #e8eae8; --muted: #969c99; --line: #2b2f2d; --card: #1b1e1d; --accent: #f07fbd; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #141615; --fg: #e8eae8; --muted: #969c99; --line: #2b2f2d; --card: #1b1e1d; --accent: #f07fbd; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 14.5px/1.8 var(--sans); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 48px 90px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.kick { font: 12px var(--mono); letter-spacing: .1em; color: var(--muted); margin: 0; }
+.wrap > h1 { font: 500 clamp(26px, 4vw, 38px)/1.35 var(--sans); margin: 8px 0 10px; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0; max-width: 64ch; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 28px 0 14px; }
+.tabs button { font: 13.5px var(--sans); color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 5px 14px; cursor: pointer; transition: transform 160ms cubic-bezier(.23,1,.32,1), color 200ms; }
+.tabs button:active { transform: scale(.96); }
+.tabs button[aria-selected="true"] { color: var(--fg); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tabs .sp { flex: 1; }
+.tabs button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.cap { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.phone { max-width: 390px; margin: 0 auto; border: 10px solid #1d201f; border-radius: 34px; overflow: hidden; }
+.phone .site { border-radius: 0; }
+
+/* ================= 小样：sulik0 首页 ================= */
+.site { container-type: inline-size;
+  --s: 1;
+  --ground: #3b4240; --ground2: #353b39; --ink: #eef0ec; --dim: #9aa29e; --faint: #6e7773; --rule: rgba(238,240,236,.09); --dash: rgba(238,240,236,.16);
+  --r1: #5f7cff; --r2: #7b63f2; --r3: #a457e6; --r4: #cf4fc4; --r5: #f0559c; --r6: #ff7a7a;
+  --ease: cubic-bezier(.23, 1, .32, 1);
+  --mono2: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  background: var(--ground); color: var(--ink); font: 300 14px/1.9 var(--sans); border-radius: 6px; overflow: hidden; position: relative;
+  box-shadow: 0 40px 80px -50px rgba(0,0,0,.55);
+}
+.site.slow { --s: 4; }
+.site a { color: inherit; text-decoration: none; }
+.site .grid-bg { position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px), linear-gradient(to bottom, var(--rule) 1px, transparent 1px);
+  background-size: 88px 88px; mask-image: linear-gradient(to bottom, #000 0, #000 520px, transparent 640px); -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 520px, transparent 640px); }
+.site .in { position: relative; max-width: 960px; margin: 0 auto; padding: 0 40px; }
+
+/* 入场：错峰淡入 + 去模糊 */
+.site .rise { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+.site.go .rise { opacity: 1; transform: none; filter: none;
+  transition: opacity calc(600ms * var(--s)) var(--ease), transform calc(600ms * var(--s)) var(--ease), filter calc(600ms * var(--s)) var(--ease);
+  transition-delay: calc(var(--i, 0) * 60ms * var(--s)); }
+
+/* 顶栏 */
+.site header { display: flex; justify-content: space-between; align-items: center; height: 88px; }
+.site .logo { display: flex; align-items: center; gap: 10px; font: 500 14px var(--mono2); letter-spacing: .02em; }
+.site .logo svg { width: 22px; height: 12px; }
+.site nav { position: relative; display: flex; gap: 2px; font: 400 13px var(--sans); }
+.site nav a { position: relative; z-index: 1; padding: 5px 12px; color: var(--dim); transition: color calc(200ms * var(--s)) var(--ease); }
+.site nav a.cur, .site nav a:hover { color: var(--ink); }
+.site nav .pill { position: absolute; top: 0; height: 100%; border-radius: 6px; background: rgba(238,240,236,.08); transition: left calc(260ms * var(--s)) var(--ease), width calc(260ms * var(--s)) var(--ease); pointer-events: none; }
+
+/* 首屏：左文字，右彩虹 */
+.site .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; min-height: 440px; padding-bottom: 20px; }
+.site h2 { font: 300 clamp(34px, 4.6vw, 52px)/1.2 var(--sans); margin: 0; letter-spacing: -.01em; }
+.site h2 b { font-weight: 500; }
+.site .tagline { font: 400 13px var(--mono2); color: var(--dim); margin: 14px 0 22px; letter-spacing: .02em; }
+.site .intro { color: var(--dim); max-width: 26em; margin: 0; }
+.site .intro em { font-style: normal; color: var(--faint); border-bottom: 1px dashed var(--faint); }
+.site .links { display: flex; gap: 18px; margin-top: 24px; font: 400 12.5px var(--mono2); }
+.site .links a { color: var(--dim); position: relative; }
+.site .links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 1px; height: 1px; background: var(--ink); transform: scaleX(0); transform-origin: right; transition: transform calc(320ms * var(--s)) var(--ease); }
+.site .links a:hover { color: var(--ink); }
+.site .links a:hover::after { transform: scaleX(1); transform-origin: left; }
+.site .rainbow { position: relative; aspect-ratio: 1.5; width: 100%; max-width: 100%; }
+.site .rainbow svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; cursor: crosshair; }
+.site .rainbow line { stroke-linecap: round; stroke-width: 7; transform-box: fill-box; transform-origin: center;
+  opacity: 0; transform: scale(.2);
+  transition: transform calc(420ms * var(--s)) var(--ease), opacity calc(420ms * var(--s)) var(--ease), filter calc(300ms * var(--s)) var(--ease); }
+.site.go .rainbow line { opacity: 1; transform: scale(1); transition-delay: calc(var(--d) * 1ms * var(--s)); }
+.site.go .rainbow line.near { transform: translate(var(--nx), var(--ny)) scale(1.18); transition-delay: 0ms; filter: brightness(1.25); }
+.site.go .rainbow line.settled { transition-delay: 0ms; }
+
+/* 分隔胶囊 */
+.site .divider { position: relative; display: flex; justify-content: center; margin: 10px 0 46px; }
+.site .divider::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--dash); }
+.site .divider span { position: relative; font: 400 12px var(--sans); color: var(--dim); background: var(--ground); border: 1px solid var(--dash); border-radius: 99px; padding: 3px 14px; display: flex; gap: 6px; align-items: center; }
+.site .divider i { font-style: normal; display: inline-block; animation: bob calc(1800ms * var(--s)) var(--ease) infinite; }
+@keyframes bob { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(3px); } }
+
+/* 文章区 */
+.site h3 { font: 500 20px var(--sans); margin: 0 0 8px; }
+.site .filters { display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 13px; color: var(--faint); margin-bottom: 26px; align-items: center; }
+.site .filters button { font: 400 13px var(--sans); color: var(--dim); background: none; border: 0; padding: 2px 6px; border-radius: 4px; cursor: pointer; transition: color calc(200ms * var(--s)) var(--ease), background calc(200ms * var(--s)) var(--ease), transform calc(140ms * var(--s)) var(--ease); }
+.site .filters button:hover { color: var(--ink); }
+.site .filters button:active { transform: scale(.95); }
+.site .filters button.on { color: var(--ink); background: rgba(238,240,236,.08); }
+.site .filters small { font: 400 11px var(--mono2); color: var(--faint); margin-left: 3px; }
+.site .cards { display: grid; gap: 14px; padding-bottom: 70px; }
+.site .card { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 28px; align-items: center; padding: 22px 26px; border: 1px dashed var(--dash); border-radius: 12px;
+  transition: border-color calc(240ms * var(--s)) var(--ease), background calc(240ms * var(--s)) var(--ease), transform calc(160ms * var(--s)) var(--ease), opacity calc(300ms * var(--s)) var(--ease); }
+.site .card:hover { border-style: solid; border-color: rgba(238,240,236,.26); background: var(--ground2); }
+.site .card:active { transform: scale(.985); }
+.site .card:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+.site .card.hide { display: none; }
+.site .card .meta { font: 400 11.5px var(--mono2); color: var(--faint); display: flex; gap: 12px; letter-spacing: .02em; }
+.site .card .meta .c { color: var(--dim); }
+.site .card h4 { font: 500 17px/1.6 var(--sans); margin: 4px 0 4px; display: flex; gap: 8px; align-items: baseline; }
+.site .card h4 .ar { font-family: var(--mono2); font-weight: 300; color: var(--faint); transform: translateX(-4px); opacity: 0; transition: transform calc(260ms * var(--s)) var(--ease), opacity calc(260ms * var(--s)) var(--ease); }
+.site .card:hover h4 .ar { transform: none; opacity: 1; }
+.site .card p { margin: 0; color: var(--dim); font-size: 13.5px; }
+.site .thumb { height: 76px; border-radius: 8px; background: var(--ground2); border: 1px solid var(--rule); position: relative; overflow: hidden; }
+.site .thumb::before { content: ""; position: absolute; inset: auto -20% -60% -20%; height: 120%; border-radius: 50% 50% 0 0;
+  background: repeating-radial-gradient(circle at 50% 100%, transparent 0 22px, var(--t1) 22px 26px, transparent 26px 32px, var(--t2) 32px 36px, transparent 36px 42px, var(--t3) 42px 46px, transparent 46px 52px); opacity: .85;
+  transition: transform calc(400ms * var(--s)) var(--ease); }
+.site .card:hover .thumb::before { transform: translateY(-6px); }
+.site .thumb.life { --t1: var(--r6); --t2: var(--r5); --t3: var(--r4); }
+.site .thumb.tech { --t1: var(--r3); --t2: var(--r2); --t3: var(--r1); }
+.site footer { border-top: 1px dashed var(--dash); padding: 22px 0 30px; font: 400 11.5px var(--mono2); color: var(--faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+@container (max-width: 760px) {
+  .site .in { padding: 0 20px; }
+  .site header { height: auto; padding: 20px 0; flex-wrap: wrap; gap: 10px; }
+  .site nav a { padding: 4px 8px; }
+  .site .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 10px; }
+  .site .rainbow { order: -1; width: 80%; margin: 0 auto; }
+  .site .card { grid-template-columns: 1fr; padding: 18px; }
+  .site .thumb { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site .rise, .site .rainbow line { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .site .divider i { animation: none; }
+}
+
+
+/* ---- 字体 ⑥：宋体标题 + 黑体正文 ---- */
+.site { --serif2: "Noto Serif SC", "Songti SC", serif; }
+.site h2, .site h3, .site .card h4, .site .post h1, .site .prose h2, .site .pn span, .site .empty b { font-family: var(--serif2); }
+.site h2 b, .site .card h4, .site .prose h2, .site h3 { font-weight: 600; }
+.site .post h1 { font-weight: 500; }
+
+/* ---- 定稿新增：桥 ---- */
+.site .rainbow line.dim { opacity: .2 !important; }
+.site .rainbow line.ghost { stroke: rgba(238,240,236,.14) !important; }
+.site .rainbow .c1 { fill: var(--dim); font: 400 10.5px var(--mono2); text-anchor: middle; letter-spacing: .04em; }
+.site .rainbow .c2 { fill: var(--ink); font: 400 13px var(--sans); text-anchor: middle; }
+.site .rainbow .foot { fill: var(--dim); font: 400 12px var(--sans); text-anchor: middle; transition: fill calc(200ms * var(--s)) var(--ease); }
+.site .rainbow .foot.on { fill: var(--ink); }
+.site .rainbow.small { max-width: 300px; justify-self: end; }
+
+/* ---- 空状态 ---- */
+.site .empty { border: 1px dashed var(--dash); border-radius: 12px; padding: 40px 26px; text-align: center; color: var(--dim); }
+.site .empty b { display: block; color: var(--ink); font-weight: 500; font-size: 16px; margin-bottom: 4px; }
+.site .empty small { font: 400 11.5px var(--mono2); color: var(--faint); }
+
+/* ---- 文章页 ---- */
+.site .progress { position: absolute; left: 0; top: 0; height: 2px; width: 38%; background: linear-gradient(90deg, var(--p1), var(--p2), var(--p3)); z-index: 3; }
+.site .progress.life { --p1: var(--r4); --p2: var(--r5); --p3: var(--r6); }
+.site .progress.tech { --p1: var(--r1); --p2: var(--r2); --p3: var(--r3); }
+.site .post { max-width: 680px; margin: 0 auto; padding: 30px 0 60px; }
+.site .back { font: 400 12.5px var(--mono2); color: var(--dim); display: inline-flex; gap: 8px; align-items: center; }
+.site .back:hover { color: var(--ink); }
+.site .back svg { width: 22px; height: 12px; }
+.site .post h1 { font: 300 clamp(28px, 4.4cqi, 40px)/1.35 var(--sans); margin: 22px 0 14px; letter-spacing: -.01em; text-wrap: balance; }
+.site .post .meta { font: 400 12px var(--mono2); color: var(--faint); display: flex; flex-wrap: wrap; gap: 6px 16px; padding-bottom: 26px; border-bottom: 1px dashed var(--dash); }
+.site .post .meta .c { color: var(--r5); }
+.site .post .meta .c.tech { color: var(--r1); }
+.site .prose { font: 300 15.5px/2 var(--sans); color: #dfe3df; padding-top: 28px; }
+.site .prose p { margin: 0 0 20px; }
+.site .prose h2 { font: 500 21px/1.5 var(--sans); margin: 40px 0 14px; letter-spacing: 0; }
+.site .prose h2::before { content: "# "; font: 400 15px var(--mono2); color: var(--faint); }
+.site .prose blockquote { margin: 26px 0; padding: 2px 0 2px 20px; border-left: 1px dashed var(--dim); color: var(--dim); }
+.site .prose blockquote p { margin: 0; }
+.site .prose pre { margin: 24px 0; padding: 16px 18px; border: 1px dashed var(--dash); border-radius: 10px; background: var(--ground2); font: 400 13px/1.85 var(--mono2); color: #dfe3df; overflow-x: auto; }
+.site .prose pre .k { color: var(--r2); }
+.site .prose pre .s { color: var(--r5); }
+.site .prose pre .cm { color: var(--faint); }
+.site .prose code { font: 400 .88em var(--mono2); padding: 1px 6px; border-radius: 4px; background: rgba(238,240,236,.08); }
+.site .prose pre code { padding: 0; background: none; font-size: inherit; }
+.site .prose a { color: var(--ink); border-bottom: 1px solid var(--faint); transition: border-color calc(200ms * var(--s)) var(--ease); }
+.site .prose a:hover { border-color: var(--ink); }
+.site .pn { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 40px; }
+.site .pn a { border: 1px dashed var(--dash); border-radius: 12px; padding: 16px 20px; display: grid; gap: 2px; transition: border-color calc(240ms * var(--s)) var(--ease), background calc(240ms * var(--s)) var(--ease), transform calc(160ms * var(--s)) var(--ease); }
+.site .pn a:hover { border-style: solid; border-color: rgba(238,240,236,.26); background: var(--ground2); }
+.site .pn a:active { transform: scale(.985); }
+.site .pn small { font: 400 11px var(--mono2); color: var(--faint); }
+.site .pn span { font-weight: 400; }
+.site .pn a:last-child { text-align: right; }
+@container (max-width: 760px) { .site .pn { grid-template-columns: 1fr; } .site .pn a:last-child { text-align: left; } .site .post { padding-top: 10px; } .site .rainbow.small { justify-self: center; } }
+
+/* ---- 交付要点 ---- */
+.spec { margin-top: 56px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 26px; }
+.spec div { border-top: 2px solid var(--fg); padding-top: 12px; min-width: 0; }
+.spec h3 { margin: 0 0 6px; font: 500 15px var(--sans); }
+.spec p, .spec li { color: var(--muted); font-size: 13.5px; }
+.spec p { margin: 0; }
+.spec ul { margin: 0; padding-left: 1.1em; }
+.sw { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sw i { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); }
+.todo { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 700px) { .todo { grid-template-columns: 1fr; } }
+.todo h2 { font: 500 19px var(--sans); margin: 0; }
+.todo ol { margin: 0; padding-left: 1.3em; display: grid; gap: 10px; }
+.todo li span { display: block; color: var(--muted); font-size: 13.5px; }
+</style>
+
+<div class="wrap">
+  <p class="kick">Final · 字体 ⑥ 宋体标题 + 黑体正文</p>
+  <h1>定稿：灰绿底色，生活与技术之间的一座彩虹桥</h1>
+  <p class="lede">彩虹按 ② 定下：左半暖色是生活，右半冷色是技术，鼠标移到哪一半，下面的文章就筛到哪一类。下面五个标签是开发要做的全部页面状态，确认后我就写成规格交给开发 agent。文章和简介仍是占位示例。</p>
+
+  <div class="tabs" role="tablist" aria-label="页面状态">
+    <button type="button" role="tab" aria-selected="true" data-v="home">首页</button>
+    <button type="button" role="tab" aria-selected="false" data-v="cat">分类页 · 生活</button>
+    <button type="button" role="tab" aria-selected="false" data-v="post">文章页</button>
+    <button type="button" role="tab" aria-selected="false" data-v="empty">没有文章时</button>
+    <button type="button" role="tab" aria-selected="false" data-v="phone">手机</button>
+    <span class="sp"></span>
+    <button type="button" id="replay">重播入场</button>
+    <button type="button" id="slow" aria-pressed="false">慢放 4 倍</button>
+  </div>
+  <p class="cap" id="cap"></p>
+  <div id="stage"></div>
+
+  <div class="spec">
+    <div><h3>配色</h3><p>底色灰绿 #3B4240，正文浅灰 #EEF0EC，次要文字两档灰。彩虹六色只用在彩虹、分类标记、阅读进度条和代码高亮上。</p>
+      <div class="sw"><i style="background:#3b4240"></i><i style="background:#353b39"></i><i style="background:#eef0ec"></i><i style="background:#9aa29e"></i><i style="background:#ff7a7a"></i><i style="background:#f0559c"></i><i style="background:#cf4fc4"></i><i style="background:#a457e6"></i><i style="background:#7b63f2"></i><i style="background:#5f7cff"></i></div></div>
+    <div><h3>字体</h3><p>标题用思源宋体（Noto Serif SC）500、600，正文用思源黑体（Noto Sans SC）300、400、500，英文和数字信息用 IBM Plex Mono。两套字体都放进仓库：中文按全部文章实际用到的字加常用字做子集，写新文章后运行一次脚本更新。</p></div>
+    <div><h3>动效</h3><ul><li>入场：依次淡入、由模糊变清晰，60ms 间隔</li><li>彩虹：入场时从左往右亮起，鼠标靠近的几笔会被推开</li><li>导航：高亮块滑到鼠标所在的项</li><li>按下：元素缩到 0.985</li><li>统一缓动 cubic-bezier(.23,1,.32,1)；开启“减少动态效果”时全部关闭</li></ul></div>
+    <div><h3>没有 JS 时</h3><p>页面照常可读：彩虹静态显示，左右两端是指向“生活”“技术”分类页的普通链接；分类筛选退化为分类页链接；导航高亮块不滑动。</p></div>
+  </div>
+
+  <div class="todo">
+    <h2>还需要你确认</h2>
+    <ol>
+      <li>五个页面状态都满意吗？<span>满意的话，我就写设计规格，交给开发 agent 实现，做完我按规格逐项验收后再给你看。</span></li>
+      <li>首屏简介和链接。<span>需要你提供一段两三行的简介，以及想放的链接（比如 GitHub）。没提供之前，首屏只放现有的一句“生活感悟与技术学习”。</span></li>
+    </ol>
+  </div>
+</div>
+
+<template id="t-header">
+  <header>
+    <a class="logo rise" style="--i:0" href="#home"><svg viewBox="0 0 22 12" aria-hidden="true"><path d="M2 11a9 9 0 0 1 18 0" fill="none" stroke="#f0559c" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.6 2"/><path d="M6 11a5 5 0 0 1 10 0" fill="none" stroke="#7b63f2" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.4 1.8"/></svg>sulik0</a>
+    <nav class="rise" style="--i:1" aria-label="主导航"><span class="pill" aria-hidden="true"></span><a data-n="home" href="#home">首页</a><a data-n="life" href="#cat">生活</a><a data-n="tech" href="#cat">技术</a></nav>
+  </header>
+</template>
+
+<script>
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, NS = "http://www.w3.org/2000/svg";
+  const posts = [
+    ["life", "2026-10-29", "4 min", "示例：一次慢下来的周末", "示例摘要：一句话说清这篇写了什么，最多两行。"],
+    ["tech", "2026-10-21", "9 min", "示例：读懂 Git 的 rebase", "示例摘要：用三个小例子讲清楚 rebase 和 merge 的区别。"],
+    ["life", "2026-10-08", "3 min", "示例：秋天的第一场雨", "示例摘要：没有封面图时，右侧用对应分类色的小彩虹代替。"],
+    ["tech", "2026-10-02", "7 min", "示例：Python 静态站生成器", "示例摘要：生活是暖色那一半，技术是冷色那一半。"],
+    ["life", "2026-09-16", "6 min", "示例：搬家后的第一顿饭", "示例摘要。"],
+    ["tech", "2026-09-11", "5 min", "示例：中文排版里的行高", "示例摘要。"]
+  ];
+  const name = c => c === "life" ? "生活" : "技术";
+  const card = (p, i) => `<a class="card rise" style="--i:${9 + i}" data-c="${p[0]}" href="#post"><div><div class="meta"><span class="c">${name(p[0])}</span><span>${p[1]}</span><span>${p[2]}</span></div><h4>${p[3]} <span class="ar">→</span></h4><p>${p[4]}</p></div><div class="thumb ${p[0]}" aria-hidden="true"></div></a>`;
+  const header = () => document.getElementById("t-header").innerHTML;
+  const hero = (opts) => `<section class="hero">
+      <div>
+        <h2 class="rise" style="--i:2">${opts.h}</h2>
+        <p class="tagline rise" style="--i:3">${opts.tag}</p>
+        <p class="intro rise" style="--i:4">${opts.intro}</p>
+        ${opts.links ? `<div class="links rise" style="--i:5"><a href="#home">GitHub ↗</a><a href="#home">RSS</a></div>` : ""}
+      </div>
+      <div class="rainbow rise ${opts.small ? "small" : ""}" style="--i:3"><svg viewBox="0 0 360 250" role="img" aria-label="彩虹：左半通往生活，右半通往技术"></svg></div>
+    </section>`;
+  const filters = (n) => `<div class="filters rise" style="--i:8">分类：<button type="button" class="on" data-f="all">全部<small>${n[0]}</small></button><button type="button" data-f="life">生活<small>${n[1]}</small></button><button type="button" data-f="tech">技术<small>${n[2]}</small></button></div>`;
+  const foot = `<footer><span>© 2026 sulik0</span><span>静态生成 · 无追踪</span></footer>`;
+  const intro = `生活感悟与技术学习。<em>（这里放你提供的两三行简介）</em>`;
+
+  const views = {
+    home: { cap: "首页：左边是问候和简介，右边是彩虹桥。鼠标移到彩虹左半或右半，下面的文章跟着筛选，点击锁定。", nav: "home", empty: false, html: () =>
+      hero({ h: "你好，<b>sulik0</b>", tag: "生活感悟 / 技术学习", intro, links: true }) +
+      `<div class="divider rise" style="--i:6"><span>我写的文章 <i aria-hidden="true">↓</i></span></div><section><h3 class="rise" style="--i:7">文章</h3>${filters([6, 3, 3])}<div class="cards">${posts.map(card).join("")}</div></section>` },
+    cat: { cap: "分类页（以“生活”为例）：彩虹只有生活那一半亮着，另一半变暗；点暗的那一半就跳到技术分类。", nav: "life", half: "life", html: () =>
+      hero({ h: "<b>生活</b>", tag: "life · 3 篇", intro: "日子里的小事和感悟。<em>（分类简介可选，由你提供）</em>", small: true }) +
+      `<section><div class="cards">${posts.filter(p => p[0] === "life").map(card).join("")}</div></section>` },
+    post: { cap: "文章页：顶部一条分类色的阅读进度条；标题细而大，正文最宽 34 个汉字左右；代码块用彩虹色高亮；末尾是上一篇、下一篇。", nav: "tech", html: () => `
+      <article class="post">
+        <a class="back rise" style="--i:2" href="#cat"><svg viewBox="0 0 22 12" aria-hidden="true"><path d="M11 2a9 9 0 0 1 9 9" fill="none" stroke="#5f7cff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.6 2"/><path d="M11 6a5 5 0 0 1 5 5" fill="none" stroke="#a457e6" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.4 1.8"/></svg>技术</a>
+        <h1 class="rise" style="--i:3">示例：读懂 Git 的 rebase</h1>
+        <div class="meta rise" style="--i:4"><span class="c tech">技术</span><span>2026-10-21</span><span>9 min</span><span>约 2,400 字</span></div>
+        <div class="prose rise" style="--i:5">
+          <p>示例段落：正文用细一档的思源黑体，行高 2 倍，颜色比标题略灰，长时间阅读不刺眼。行内代码像 <code>git rebase -i</code> 这样显示。</p>
+          <h2>先看 merge</h2>
+          <p>示例段落：二级标题前面带一个淡淡的 # 号，呼应技术文章的 Markdown 语境；生活文章同样适用，不会显得突兀。</p>
+          <blockquote><p>示例引用：引用用一条虚线竖线区分，和全站的虚线语言一致。</p></blockquote>
+<pre><code><span class="cm"># 把最近三个提交合并成一个</span>
+<span class="k">git</span> rebase -i HEAD~3
+<span class="k">git</span> commit --amend -m <span class="s">"整理提交"</span></code></pre>
+          <p>示例段落：链接是 <a href="#post">带下划线的浅色文字</a>，悬停时下划线变亮。</p>
+        </div>
+        <div class="pn rise" style="--i:6"><a href="#post"><small>← 上一篇</small><span>示例：Python 静态站生成器</span></a><a href="#post"><small>下一篇 →</small><span>示例：中文排版里的行高</span></a></div>
+      </article>`, progress: "tech" },
+    empty: { cap: "没有文章时（现在的真实状态）：彩虹变成一道灰色虚线拱门，文章区是一个虚线框。写下第一篇后，彩虹就有了颜色。", nav: "home", ghost: true, html: () =>
+      hero({ h: "你好，<b>sulik0</b>", tag: "生活感悟 / 技术学习", intro }) +
+      `<div class="divider rise" style="--i:6"><span>我写的文章 <i aria-hidden="true">↓</i></span></div><section><h3 class="rise" style="--i:7">文章</h3>${filters([0, 0, 0])}<div class="cards"><div class="empty rise" style="--i:9"><b>还没有文章</b>第一篇会出现在这里。<br><small>content/posts.json 为空</small></div></div></section>` },
+    phone: { cap: "手机（390px 宽）：彩虹移到问候语上方；导航缩小；文章卡片去掉缩略图。手机上没有悬停，彩虹两半直接点击进入分类。", nav: "home", phone: true, html: () => views.home.html() }
+  };
+
+  const stage = document.getElementById("stage"), capEl = document.getElementById("cap");
+  let site, slow = false;
+
+  function rainbow(svg, opt) {
+    const cx = 180, cy = 222, lines = [];
+    const mk = (t, a, x) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (x != null) e.textContent = x; svg.appendChild(e); return e; };
+    const ang = ["--r6", "--r5", "--r4", "--r3", "--r2", "--r1"];
+    for (let row = 0; row < 6; row++) {
+      const r = 170 - row * 18, n = Math.round(r / 7.2);
+      for (let k = 0; k <= n; k++) {
+        const a = Math.PI + (k / n) * Math.PI, a2 = a + (Math.PI / n) * .55;
+        const x1 = cx + Math.cos(a) * r, y1 = cy + Math.sin(a) * r, x2 = cx + Math.cos(a2) * r, y2 = cy + Math.sin(a2) * r;
+        if (Math.max(y1, y2) > cy + 2) continue;
+        const l = mk("line", { x1, y1, x2, y2 }), t = k / n;
+        l.style.stroke = `var(${ang[Math.min(5, Math.floor(t * 6))]})`;
+        l.style.setProperty("--d", Math.round(350 + t * 700 + row * 40));
+        if (opt.ghost) l.classList.add("ghost");
+        const side = (x1 + x2) / 2 < cx ? "life" : "tech";
+        if (opt.half && side !== opt.half) l.classList.add("dim");
+        lines.push({ l, side, mx: (x1 + x2) / 2, my: (y1 + y2) / 2, ux: Math.cos(a), uy: Math.sin(a) });
+      }
+    }
+    const c1 = mk("text", { x: cx, y: cy - 30, class: "c1" }), c2 = mk("text", { x: cx, y: cy - 8, class: "c2" });
+    const fl = mk("text", { x: cx - 128, y: cy + 22, class: "foot" }, "生活"), fr = mk("text", { x: cx + 128, y: cy + 22, class: "foot" }, "技术");
+    const idle = () => {
+      if (opt.ghost) { c1.textContent = "还没有文章"; c2.textContent = "写下第一篇，桥就有了颜色"; }
+      else if (opt.half) { c1.textContent = opt.half === "life" ? "当前 · 生活" : "当前 · 技术"; c2.textContent = "点另一半，去" + (opt.half === "life" ? "技术" : "生活"); }
+      else { c1.textContent = "生活 3 · 技术 3"; c2.textContent = "选一头走进去"; }
+      fl.classList.toggle("on", opt.half === "life"); fr.classList.toggle("on", opt.half === "tech");
+      if (!opt.half) lines.forEach(o => o.l.classList.remove("dim"));
+      else lines.forEach(o => o.l.classList.toggle("dim", o.side !== opt.half));
+    };
+    idle();
+    const pt = e => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+    svg.addEventListener("pointermove", e => {
+      const q = pt(e);
+      lines.forEach(o => { const dx = o.mx - q.x, dy = o.my - q.y, d2 = dx * dx + dy * dy;
+        if (d2 < 1300) { const f = 1 - d2 / 1300; o.l.style.setProperty("--nx", (o.ux * 7 * f).toFixed(2) + "px"); o.l.style.setProperty("--ny", (o.uy * 7 * f).toFixed(2) + "px"); o.l.classList.add("near"); }
+        else o.l.classList.remove("near"); });
+      if (opt.ghost) return;
+      const side = q.x < cx ? "life" : "tech";
+      lines.forEach(o => o.l.classList.toggle("dim", o.side !== side));
+      fl.classList.toggle("on", side === "life"); fr.classList.toggle("on", side === "tech");
+      c1.textContent = name(side) + " · 3 篇"; c2.textContent = opt.half ? (side === opt.half ? "当前分类" : "点击，去" + name(side)) : "点击，只看这一类";
+      if (opt.onSide) opt.onSide(side, false);
+    });
+    svg.addEventListener("pointerleave", () => { lines.forEach(o => o.l.classList.remove("near")); idle(); if (opt.onSide) opt.onSide(null, false); });
+    svg.addEventListener("click", e => { if (opt.ghost) return; const side = pt(e).x < cx ? "life" : "tech"; if (opt.onSide) opt.onSide(side, true); });
+    return lines;
+  }
+
+  function show(v) {
+    const V = views[v];
+    document.querySelectorAll(".tabs [role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.v === v));
+    capEl.textContent = V.cap;
+    stage.innerHTML = `${V.phone ? '<div class="phone">' : ""}<div class="site${slow ? " slow" : ""}">${V.progress ? `<div class="progress ${V.progress}"></div>` : ""}<div class="grid-bg" aria-hidden="true"></div><div class="in">${header()}${V.html()}${foot}</div></div>${V.phone ? "</div>" : ""}`;
+    site = stage.querySelector(".site");
+    // nav pill
+    const nav = site.querySelector("nav"), pill = nav.querySelector(".pill"), cur = nav.querySelector(`[data-n="${V.nav}"]`);
+    cur.classList.add("cur");
+    const moveTo = a => { pill.style.left = a.offsetLeft + "px"; pill.style.width = a.offsetWidth + "px"; };
+    nav.querySelectorAll("a").forEach(a => { a.addEventListener("mouseenter", () => moveTo(a)); a.addEventListener("focus", () => moveTo(a)); });
+    nav.addEventListener("mouseleave", () => moveTo(cur)); requestAnimationFrame(() => moveTo(cur));
+    // cards & filters
+    const cards = [...site.querySelectorAll(".card")]; let cf = "all";
+    const showCards = f => cards.forEach(c => c.classList.toggle("hide", f !== "all" && c.dataset.c !== f));
+    const setF = f => { cf = f; site.querySelectorAll(".filters button").forEach(x => x.classList.toggle("on", x.dataset.f === f)); showCards(f); };
+    site.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => setF(b.dataset.f)));
+    // rainbow
+    const svg = site.querySelector(".rainbow svg");
+    if (svg) rainbow(svg, { ghost: V.ghost, half: V.half, onSide: (side, lock) => {
+      if (V.half) { if (lock && side && side !== V.half) show(side === "life" ? "cat" : "home"); return; }
+      if (lock) setF(side); else showCards(side || cf);
+    } });
+    site.addEventListener("transitionend", e => { if (e.target.tagName === "line" && !e.target.classList.contains("near")) e.target.classList.add("settled"); });
+    site.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener("click", e => { const t = a.getAttribute("href").slice(1); if (views[t]) { e.preventDefault(); show(t); } else e.preventDefault(); }));
+    if (reduce) site.classList.add("go"); else requestAnimationFrame(() => requestAnimationFrame(() => site.classList.add("go")));
+  }
+
+  document.querySelectorAll(".tabs [role=tab]").forEach(b => b.addEventListener("click", () => show(b.dataset.v)));
+  document.getElementById("replay").addEventListener("click", () => { const v = document.querySelector('.tabs [aria-selected="true"]').dataset.v; show(v); });
+  const sb = document.getElementById("slow");
+  sb.addEventListener("click", () => { slow = !slow; sb.setAttribute("aria-pressed", slow); if (site) site.classList.toggle("slow", slow); });
+  show("home");
+})();
+</script>
