@@ -1,7 +1,7 @@
 # 交接说明
 
 - 站名：sulik0 的博客；内容为生活感悟与技术学习。
-- 当前只维护源码。禁止使用 ChatGPT Sites；没有自动部署，公开发布须按所有者要求执行。
+- 禁止使用 ChatGPT Sites。所有者已选定 GitHub Pages：推送到 `main` 会自动发布到 https://sulik0.github.io/sulik0-blog/ ，所以 `main` 上的内容就是线上内容。
 - 不连接、不改动 Claude 中转 VPS，不复制其地址、密钥、配置、备份或运维记录。
 - 保持静态、无第三方依赖。只保留首页、两个分类、文章页；新增功能须有用户需求。
 - 页面模板在 `templates/`，样式在 `assets/site.css`，文章在 `content/`，生成器在 `scripts/build.py`。
