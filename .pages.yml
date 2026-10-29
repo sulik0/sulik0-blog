@@ -14,7 +14,7 @@ content:
     format: yaml-frontmatter
     delimiters: "---"
     subfolders: false
-    filename: "{slug}.md"
+    filename: "{fields.slug}.md"
     view:
       fields: [title, category, date]
       primary: title
