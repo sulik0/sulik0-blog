@@ -179,6 +179,7 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; border-rad
 .prose pre { margin: 24px 0; padding: 16px 18px; overflow-x: auto; border: 1px dashed var(--dash); border-radius: 10px; background: var(--ground2); color: var(--body); font: 400 13px/1.85 var(--mono); }
 .prose code { padding: 1px 6px; border-radius: 4px; background: rgba(238, 240, 236, .08); font: 400 .88em var(--mono); }
 .prose pre code { padding: 0; background: none; font-size: inherit; }
+.prose img { display: block; max-width: 100%; height: auto; margin: 28px 0; border-radius: 10px; }
 .prose a { color: var(--ink); border-bottom: 1px solid var(--faint); transition: border-color 200ms var(--ease); }
 .prose a:hover { border-color: var(--ink); }
 .pn { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 40px; }

@@ -1,0 +1,63 @@
+# Pages CMS 配置：https://pagescms.org/docs/configuration/
+# 图片保存在 content/media/，文章里写成 /media/文件名，build.py 生成时自动补上站点子路径并复制到 dist/media/。
+media:
+  input: content/media
+  output: /media
+  rename: safe
+  categories: [image]
+
+content:
+  - name: posts
+    label: 文章
+    type: collection
+    path: content/posts
+    format: yaml-frontmatter
+    delimiters: "---"
+    subfolders: false
+    filename: "{slug}.md"
+    view:
+      fields: [title, category, date]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: category
+        label: 分类
+        type: select
+        required: true
+        options:
+          values:
+            - name: life
+              label: 生活
+            - name: tech
+              label: 技术
+      - name: date
+        label: 日期
+        type: date
+        required: true
+        description: 默认是今天，可以修改。
+        options:
+          format: yyyy-MM-dd
+      - name: excerpt
+        label: 摘要
+        type: string
+        description: 可选，一句话介绍，会显示在文章列表里。
+      - name: slug
+        label: 文章地址
+        type: string
+        required: true
+        description: 只能用小写英文、数字和连字符，例如 autumn-rain
+        pattern:
+          regex: "^[a-z0-9]+(-[a-z0-9]+)*$"
+          message: 只能用小写英文、数字和连字符，例如 autumn-rain
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: markdown
