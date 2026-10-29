@@ -1,5 +1,10 @@
-<header class="intro">
-  <h1>$heading</h1>
-  <p>$description</p>
-</header>
-<section aria-label="文章列表">$posts</section>
+<section class="hero$hero_class">
+  <div>
+    <h1 class="rise" style="--i:2">$heading</h1>
+    <p class="tagline rise" style="--i:3">$tagline</p>
+$intro$links  </div>
+  <div class="rainbow rise" style="--i:3">$rainbow</div>
+</section>
+$divider<section class="posts" id="posts" aria-label="文章列表">
+$filters  <div class="cards">$posts</div>
+</section>
