@@ -4,10 +4,17 @@
     pip install fonttools brotli
     python3 scripts/fonts.py
 
+CI（GitHub Actions）里用 `python3 scripts/fonts.py --ci`：输出简短，失败时退出码非零，
+并且只在全部成功后才替换 assets/fonts/，不会留下半成品。扫描 content/ 下所有文件的全部文字
+（含 .md 开头的元数据），不依赖 posts.json。
+
 第一次运行会把官方开源字体下载到 .font-src/（不提交），再按字表子集化，
 输出 assets/fonts/*.woff2、OFL.txt 和 charset.txt。build.py / check.py 不依赖本脚本。
 """
+import logging
+import shutil
 import sys
+import tempfile
 import unicodedata
 import urllib.request
 from pathlib import Path
@@ -158,8 +165,16 @@ def build_charset():
     return "".join(sorted(chars))
 
 
+QUIET = False
+
+
+def log(msg):
+    if not QUIET:
+        print(msg)
+
+
 def download(url, dest):
-    print(f"下载 {url}")
+    log(f"下载 {url}")
     req = urllib.request.Request(url, headers={"User-Agent": "sulik0-fonts"})
     with urllib.request.urlopen(req, timeout=120) as r:
         dest.write_bytes(r.read())
@@ -169,10 +184,12 @@ def ensure_sources():
     SRC.mkdir(exist_ok=True)
     for name, url in SOURCES.items():
         if not (SRC / name).exists():
-            download(url, SRC / name)
+            tmp = SRC / (name + ".part")
+            download(url, tmp)
+            tmp.replace(SRC / name)
 
 
-def make(out_name, src_name, weight, cjk, unicodes):
+def make(out, out_name, src_name, weight, cjk, unicodes):
     opts = subset.Options()
     opts.flavor = "woff2"
     opts.layout_features = ["*"]
@@ -185,29 +202,56 @@ def make(out_name, src_name, weight, cjk, unicodes):
     sub.subset(font)
     if weight is not None:  # 可变字体：先子集再固定到单一字重
         font = instancer.instantiateVariableFont(font, {"wght": weight})
-    dest = OUT / f"{out_name}.woff2"
+    dest = out / f"{out_name}.woff2"
     subset.save_font(font, str(dest), opts)
-    print(f"{dest.name}: {dest.stat().st_size / 1024:.0f} KB")
+    log(f"{dest.name}: {dest.stat().st_size / 1024:.0f} KB")
 
 
-def main():
-    ensure_sources()
-    OUT.mkdir(parents=True, exist_ok=True)
+def generate(out, ci):
     charset = build_charset()
     cjk_unicodes = [ord(c) for c in charset]
     mono_unicodes = [c for lo, hi in MONO_RANGES for c in range(lo, hi + 1)]
     for out_name, src, weight, cjk in JOBS:
-        make(out_name, src, weight, cjk, cjk_unicodes if cjk else mono_unicodes)
+        make(out, out_name, src, weight, cjk, cjk_unicodes if cjk else mono_unicodes)
 
     # 不加换行、不加分隔符
-    (OUT / "charset.txt").write_bytes(charset.encode("utf-8"))
+    (out / "charset.txt").write_bytes(charset.encode("utf-8"))
 
-    parts = []
-    for title, url in LICENSES:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "sulik0-fonts"}), timeout=60) as r:
-            parts.append(f"===== {title} =====\n来源：{url}\n\n" + r.read().decode("utf-8").strip())
-    (OUT / "OFL.txt").write_text("\n\n\n".join(parts) + "\n", encoding="utf-8")
-    print(f"字表 {len(charset)} 字，已写入 {OUT}")
+    old_license = OUT / "OFL.txt"
+    if ci and old_license.exists():  # 许可证文本不随文章变化，CI 里沿用已提交的
+        shutil.copy2(old_license, out / "OFL.txt")
+    else:
+        parts = []
+        for title, url in LICENSES:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "sulik0-fonts"}), timeout=60) as r:
+                parts.append(f"===== {title} =====\n来源：{url}\n\n" + r.read().decode("utf-8").strip())
+        (out / "OFL.txt").write_text("\n\n\n".join(parts) + "\n", encoding="utf-8")
+    return len(charset)
+
+
+def main():
+    global QUIET
+    ci = "--ci" in sys.argv[1:]
+    QUIET = ci
+    if ci:
+        logging.getLogger("fontTools").setLevel(logging.ERROR)
+    try:
+        ensure_sources()
+        # 先写到临时目录，全部成功后再替换 assets/fonts/
+        tmp = Path(tempfile.mkdtemp(prefix="fonts-", dir=ROOT))
+        try:
+            n = generate(tmp, ci)
+            OUT.mkdir(parents=True, exist_ok=True)
+            for f in tmp.iterdir():
+                f.replace(OUT / f.name)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+    except Exception as e:
+        if not ci:
+            raise
+        print(f"fonts.py 失败：{type(e).__name__}: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"字表 {n} 字，已写入 {OUT}")
 
 
 if __name__ == "__main__":

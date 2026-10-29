@@ -1,4 +1,4 @@
-# Build the static blog with Python 3 (standard library only) and publish dist/ to GitHub Pages.
+# Build the static blog (build.py/check.py use the standard library only; fonttools+brotli are only for the font step) and publish dist/ to GitHub Pages.
 name: Publish to GitHub Pages
 
 on:
@@ -19,13 +19,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      # 按全部文章重新子集化字体（只在构建环境里生成，不提交回仓库）。
+      # 失败不阻塞发布：沿用仓库里已提交的字体。
+      - uses: actions/cache@v6
+        with:
+          path: .font-src
+          key: font-src-${{ hashFiles('scripts/fonts.py') }}
+      - id: fonts
+        continue-on-error: true
+        run: |
+          pip install --quiet fonttools brotli
+          python3 scripts/fonts.py --ci
+      - if: steps.fonts.outcome == 'failure'
+        run: echo "::warning title=字体子集化失败::已跳过，使用仓库里已提交的字体；新文章里的生僻字可能显示为备用字体。"
       - run: python3 scripts/build.py
       - run: python3 scripts/check.py
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -37,4 +50,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
