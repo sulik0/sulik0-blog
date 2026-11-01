@@ -5,7 +5,11 @@ const STATE_COOKIE = 'blog_admin_state';
 function b64(bytes) {
   let s = '';
   for (const byte of bytes) s += String.fromCharCode(byte);
-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(s);
+}
+
+function b64url(bytes) {
+  return b64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function unb64(value) {
@@ -26,7 +30,7 @@ async function key(secret) {
 async function seal(value, secret) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await key(secret), new TextEncoder().encode(value));
-  return `${b64(iv)}.${b64(new Uint8Array(encrypted))}`;
+  return `${b64url(iv)}.${b64url(new Uint8Array(encrypted))}`;
 }
 
 async function open(value, secret) {
@@ -149,7 +153,7 @@ export default {
     const url = new URL(request.url);
     try {
       if (url.pathname === '/login') {
-        const state = b64(crypto.getRandomValues(new Uint8Array(24)));
+        const state = b64url(crypto.getRandomValues(new Uint8Array(24)));
         const redirect = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(env.GITHUB_CLIENT_ID)}&redirect_uri=${encodeURIComponent(env.PUBLIC_URL + '/callback')}&scope=repo&state=${state}`;
         return new Response(null, { status: 302, headers: { Location: redirect, 'Set-Cookie': setCookie(STATE_COOKIE, state, 600) } });
       }
