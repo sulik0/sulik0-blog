@@ -1,0 +1,12 @@
+name = "sulik0-blog-admin"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[vars]
+GITHUB_OWNER = "sulik0"
+GITHUB_REPO = "sulik0-blog"
+GITHUB_BRANCH = "main"

@@ -5,3 +5,4 @@ dist/
 .env
 .env.*
 .font-src/
+worker/.wrangler/
