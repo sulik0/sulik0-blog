@@ -56,7 +56,7 @@ function config(env) {
   return { owner: env.GITHUB_OWNER, repo: env.GITHUB_REPO, branch: env.GITHUB_BRANCH || 'main' };
 }
 
-async function github(env, path, init = {}, token) {
+async function github(path, init = {}, token) {
   const headers = new Headers(init.headers || {});
   headers.set('Accept', 'application/vnd.github+json');
   headers.set('X-GitHub-Api-Version', '2022-11-28');
