@@ -129,6 +129,7 @@ async function uploadMedia(request, env, token) {
   const form = await request.formData();
   const file = form.get('file');
   if (!(file instanceof File) || !file.name) throw new Error('请选择图片');
+  if (file.size > 10 * 1024 * 1024) throw new Error('图片不能超过 10 MB');
   const name = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
   if (!/\.(png|jpe?g|gif|webp|svg)$/.test(name)) throw new Error('只支持 PNG、JPG、GIF、WebP 或 SVG 图片');
   const { owner, repo, branch } = config(env);
