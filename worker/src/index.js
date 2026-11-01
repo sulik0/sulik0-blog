@@ -13,6 +13,11 @@ function unb64(value) {
   return Uint8Array.from(atob(s), c => c.charCodeAt(0));
 }
 
+function decodeGithubContent(value) {
+  const bytes = Uint8Array.from(atob(value.replace(/\s/g, '')), c => c.charCodeAt(0));
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+}
+
 async function key(secret) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
   return crypto.subtle.importKey('raw', digest, 'AES-GCM', false, ['encrypt', 'decrypt']);
@@ -97,7 +102,7 @@ async function posts(request, env, token) {
   const result = [];
   for (const file of files) {
     const data = await github(`/repos/${owner}/${repo}/contents/${file.path}?ref=${encodeURIComponent(branch)}`, {}, token);
-    result.push({ ...parsePost(atob(data.content.replace(/\n/g, '')), file.name.slice(0, -3)), sha: data.sha });
+    result.push({ ...parsePost(decodeGithubContent(data.content), file.name.slice(0, -3)), sha: data.sha });
   }
   return result.sort((a, b) => b.date.localeCompare(a.date));
 }
