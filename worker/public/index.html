@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#141216">
+  <title>博客后台</title>
+  <style>
+    :root { color-scheme: dark; font: 16px/1.6 system-ui, -apple-system, sans-serif; background:#141216; color:#f4edf4; }
+    body { max-width: 860px; margin:auto; padding:24px 16px 48px; }
+    header, .row, .actions { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1 { font-size:1.45rem; margin:0; } h2 { margin-top:2rem; font-size:1.1rem; }
+    button, input, select, textarea { font:inherit; border:1px solid #4a3d4d; border-radius:8px; background:#211b25; color:inherit; padding:10px 12px; }
+    button { cursor:pointer; background:#e2b4d7; color:#241b24; border:0; font-weight:700; } button.secondary { background:#312833; color:#f4edf4; }
+    button.danger { background:#713d4f; color:#fff; } button:disabled { opacity:.5; }
+    label { display:block; margin-top:14px; } label span { display:block; font-size:.85rem; color:#b8aab8; margin-bottom:4px; }
+    input, select, textarea { box-sizing:border-box; width:100%; } textarea { min-height:320px; resize:vertical; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; } .card { border:1px solid #3b303e; border-radius:10px; padding:14px; margin:10px 0; }
+    .muted, #status { color:#b8aab8; } .hidden { display:none !important; } .actions { margin-top:18px; justify-content:flex-start; flex-wrap:wrap; }
+    @media (max-width:600px) { body { padding:18px 12px 40px; } .grid { grid-template-columns:1fr; } header { align-items:flex-start; } }
+  </style>
+</head>
+<body>
+  <header><h1>博客后台</h1><a id="login" href="/login"><button>用 GitHub 登录</button></a><a id="logout" class="hidden" href="/logout"><button class="secondary">退出</button></a></header>
+  <p id="status" class="muted">正在检查登录状态…</p>
+  <main id="app" class="hidden">
+    <div class="actions"><button id="new">新建文章</button><button id="refresh" class="secondary">刷新列表</button></div>
+    <section id="list"><h2>文章</h2><div id="posts"></div></section>
+    <section id="editor" class="hidden"><h2 id="editor-title">新建文章</h2>
+      <div class="grid"><label><span>标题</span><input id="title"></label><label><span>文章地址（小写英文、数字、连字符）</span><input id="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*"></label></div>
+      <div class="grid"><label><span>分类</span><select id="category"><option value="life">生活</option><option value="tech">技术</option></select></label><label><span>日期</span><input id="date" type="date"></label></div>
+      <label><span>摘要（可选）</span><input id="excerpt"></label>
+      <label><span>正文 Markdown</span><textarea id="body" placeholder="从这里开始写…"></textarea></label>
+      <div class="actions"><button id="save">保存并发布</button><button id="cancel" class="secondary">取消</button><button id="delete" class="danger hidden">删除文章</button><label><span>上传图片</span><input id="image" type="file" accept="image/*"></label></div>
+    </section>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id), state = { posts: [], current: null };
+    const today = () => new Date().toISOString().slice(0, 10);
+    async function api(path, options) { const res = await fetch(path, options); const data = await res.json().catch(() => ({})); if (!res.ok) throw Error(data.error || '请求失败'); return data; }
+    function showEditor(post) { state.current = post || null; $('editor-title').textContent = post ? '编辑文章' : '新建文章'; $('title').value = post?.title || ''; $('slug').value = post?.slug || ''; $('category').value = post?.category || 'life'; $('date').value = post?.date || today(); $('excerpt').value = post?.excerpt || ''; $('body').value = post?.body || ''; $('slug').disabled = Boolean(post); $('delete').classList.toggle('hidden', !post); $('editor').classList.remove('hidden'); $('list').classList.add('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function render() { $('posts').innerHTML = state.posts.length ? state.posts.map(p => `<div class="card"><div class="row"><strong>${esc(p.title)}</strong><span class="muted">${p.date} · ${p.category === 'life' ? '生活' : '技术'}</span></div><p class="muted">${esc(p.excerpt || '')}</p><button class="secondary" data-slug="${p.slug}">编辑</button></div>`).join('') : '<p class="muted">还没有文章。</p>'; document.querySelectorAll('[data-slug]').forEach(b => b.onclick = () => showEditor(state.posts.find(p => p.slug === b.dataset.slug))); }
+    function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    async function load() { state.posts = await api('/api/posts'); render(); }
+    $('new').onclick = () => showEditor(); $('cancel').onclick = () => { $('editor').classList.add('hidden'); $('list').classList.remove('hidden'); }; $('refresh').onclick = load;
+    $('save').onclick = async () => { const post = { title:$('title').value, slug:$('slug').value, category:$('category').value, date:$('date').value, excerpt:$('excerpt').value, body:$('body').value }; $('save').disabled = true; try { await api('/api/posts', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(post) }); $('status').textContent = '已保存，GitHub Actions 会自动发布。'; await load(); $('cancel').click(); } catch (e) { alert(e.message); } finally { $('save').disabled = false; } };
+    $('delete').onclick = async () => { if (!confirm('确定删除这篇文章吗？')) return; try { await api('/api/posts?slug=' + encodeURIComponent(state.current.slug), { method:'DELETE' }); await load(); $('cancel').click(); } catch(e) { alert(e.message); } };
+    $('image').onchange = async e => { const file = e.target.files[0]; if (!file) return; const form = new FormData(); form.append('file', file); try { const data = await api('/api/media', { method:'POST', body:form }); $('body').value += `\n\n![${file.name}](${data.path})\n`; } catch(e) { alert(e.message); } e.target.value = ''; };
+    (async () => { try { const s = await api('/api/session'); if (!s.authenticated) return; $('login').classList.add('hidden'); $('logout').classList.remove('hidden'); $('app').classList.remove('hidden'); $('status').textContent = '已登录 GitHub'; await load(); } catch(e) { $('status').textContent = e.message; } })();
+  </script>
+</body>
+</html>
