@@ -104,3 +104,5 @@ excerpt: 可选的一句话摘要
 2026-10-29：按所有者要求公开发布到 GitHub Pages。仓库改为公开；`.github/workflows/pages.yml` 在推送到 `main` 时运行 `build.py` 和 `check.py`，再把 `dist/` 发布出去。验证：Actions 运行成功，线上首页、分类页和字体都能加载。回退：在仓库 Settings → Pages 停用，或删除该工作流。本地预览如果要用根路径，临时把 `base_path` 改回 `""`，不要提交这个改动。
 
 2026-10-30：文章信息从 `content/posts.json` 移到每篇 `.md` 文件开头，新增 `.pages.yml`（Pages CMS 后台）、`content/media/` 图片目录和 `![说明](路径)` 图片语法；删除 `posts.json`。验证：`build.py` + `check.py` 通过，临时带图片文章生成正常（已删除）。回退：还原本次提交，把文章信息写回 `posts.json` 即可。
+
+2026-11-04：自建 Worker 后台改为博客同款彩虹桥风格，增加本机草稿自动/手动保存、刷新恢复和 Markdown 备份。草稿不写入公开仓库；跨设备前请下载备份。部署前自动复用博客字体与站标。编码回归与草稿/手机布局检查见 `worker/README.md`。回退：还原本次后台界面提交。

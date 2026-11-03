@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - 'worker/**'
+      - 'assets/fonts/**'
+      - 'assets/favicon.svg'
       - '.github/workflows/admin.yml'
 
 permissions:
@@ -19,6 +21,10 @@ jobs:
         working-directory: worker
     steps:
       - uses: actions/checkout@v4
+      - name: Check admin encoding
+        run: node --test test/encoding.test.mjs
+      - name: Prepare shared blog assets
+        run: python3 prepare_assets.py
       - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -6,3 +6,7 @@ dist/
 .env.*
 .font-src/
 worker/.wrangler/
+
+# Prepared from the blog assets before deploying the admin.
+worker/public/fonts/
+worker/public/favicon.svg
